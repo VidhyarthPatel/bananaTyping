@@ -1,10 +1,21 @@
+"use client";
+
 import React from "react";
 
 function Nav() {
   return (
     <nav className="flex items-center justify-between py-2 border-b border-[#222222]/80 select-none">
       <div className="flex items-center gap-5">
-        <span className="text-2xl font-bold font-mono tracking-wide text-[#e2b714]">KeyZen</span>
+        <span
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("restart-typing-test"));
+            }
+          }}
+          className="text-2xl font-bold font-mono tracking-wide text-[#e2b714] cursor-pointer hover:opacity-85 transition-opacity"
+        >
+          BananaTyping
+        </span>
         
         {/* Navigation utility icons */}
         <div className="flex items-center gap-3.5 text-[#444444] mt-0.5">

@@ -68,10 +68,18 @@ export default function ResultsDashboard({
     burst: number;
   } | null>(null);
 
-  const clampedPercent = hoveredPoint ? Math.max(15, Math.min(85, (hoveredPoint.y / chartHeight) * 100)) : 0;
-  const diffPercent = hoveredPoint ? ((hoveredPoint.y / chartHeight) * 100) - clampedPercent : 0;
-  const arrowTop = hoveredPoint ? Math.max(12, Math.min(88, 50 + diffPercent * 2.7)) : 50;
-  const isRightHalf = hoveredPoint ? hoveredPoint.second > (history[history.length - 1]?.second || 30) / 2 : false;
+  const clampedPercent = hoveredPoint
+    ? Math.max(15, Math.min(85, (hoveredPoint.y / chartHeight) * 100))
+    : 0;
+  const diffPercent = hoveredPoint
+    ? (hoveredPoint.y / chartHeight) * 100 - clampedPercent
+    : 0;
+  const arrowTop = hoveredPoint
+    ? Math.max(12, Math.min(88, 50 + diffPercent * 2.7))
+    : 50;
+  const isRightHalf = hoveredPoint
+    ? hoveredPoint.second > (history[history.length - 1]?.second || 30) / 2
+    : false;
   // Calculate the maximum speed value in history (round up to nearest 10, min 40)
   const maxChartSpeed = useMemo(() => {
     if (history.length === 0) return 40;
@@ -212,7 +220,6 @@ export default function ResultsDashboard({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  // title="Words Per Minute (correct chars / 5) / (minutes)"
                 >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="16" x2="12" y2="12" />

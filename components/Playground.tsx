@@ -5,6 +5,7 @@ import ResultsDashboard from "./ResultsDashboard";
 import TypingSandbox from "./TypingSandbox";
 import { motion, AnimatePresence } from "motion/react";
 import { useTypingTest } from "./useTypingTest";
+import KeyboardSoundManager from "./KeyboardSoundManager";
 
 function Playground() {
   const {
@@ -46,10 +47,16 @@ function Playground() {
     copyResultsReport,
     downloadResults,
     practiceMisspelledWords,
+    soundPack,
+    setSoundPack,
+    clickSound,
+    setClickSound,
   } = useTypingTest();
 
   return (
     <div className="w-full max-w-none flex flex-col gap-6 select-none">
+      {/* Keyboard Sound player */}
+      <KeyboardSoundManager soundPack={soundPack} clickSound={clickSound} />
       {/* CSS Styles for stepping cursor blinking when idle */}
       <style>{`
         @keyframes cursor-blink {
@@ -86,6 +93,10 @@ function Playground() {
                 setHasNumbers={setHasNumbers}
                 difficulty={difficulty}
                 setDifficulty={setDifficulty}
+                soundPack={soundPack}
+                setSoundPack={setSoundPack}
+                clickSound={clickSound}
+                setClickSound={setClickSound}
               />
             </motion.div>
           )}

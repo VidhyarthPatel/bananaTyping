@@ -71,6 +71,8 @@ export function useTypingTest() {
   const [hasPunctuation, setHasPunctuation] = useState(false);
   const [hasNumbers, setHasNumbers] = useState(false);
   const [difficulty, setDifficulty] = useState<"easy" | "hard">("easy");
+  const [soundPack, setSoundPack] = useState("off");
+  const [clickSound, setClickSound] = useState("on");
 
   // States for smooth absolute caret cursor and scrolling viewport
   const [cursorStyle, setCursorStyle] = useState({
@@ -534,13 +536,33 @@ export function useTypingTest() {
     return Array.from(new Set(badWords));
   }, []);
 
-  // Load PB on mount
+  // Load settings on mount
   useEffect(() => {
     const pb = localStorage.getItem("minttyping_pb");
     if (pb) {
       setPersonalBest(parseInt(pb, 10));
     }
+    const savedSound = localStorage.getItem("minttyping_sound");
+    if (savedSound) {
+      setSoundPack(savedSound);
+    }
+    const savedClickSound = localStorage.getItem("minttyping_click_sound");
+    if (savedClickSound) {
+      setClickSound(savedClickSound);
+    } else {
+      setClickSound("on");
+    }
   }, []);
+
+  // Save sound pack to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_sound", soundPack);
+  }, [soundPack]);
+
+  // Save click sound to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_click_sound", clickSound);
+  }, [clickSound]);
 
   // Calculate results & Personal Best when the test finishes
   useEffect(() => {
@@ -623,6 +645,17 @@ export function useTypingTest() {
     handleRestart(true);
   };
 
+  // Listen for custom restart event (e.g., when navigation logo is clicked)
+  useEffect(() => {
+    const handleCustomRestart = () => {
+      handleRestart();
+    };
+    window.addEventListener("restart-typing-test", handleCustomRestart);
+    return () => {
+      window.removeEventListener("restart-typing-test", handleCustomRestart);
+    };
+  }, [handleRestart]);
+
   return {
     timer,
     setTimer,
@@ -666,5 +699,9 @@ export function useTypingTest() {
     copyResultsReport,
     downloadResults,
     practiceMisspelledWords,
+    soundPack,
+    setSoundPack,
+    clickSound,
+    setClickSound,
   };
 }

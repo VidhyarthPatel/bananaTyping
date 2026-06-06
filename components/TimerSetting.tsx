@@ -159,7 +159,7 @@ function TimerSetting({
       {/* Group 4: Keyboard Sound */}
       <div className="flex items-center gap-1.5 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl">
         <button
-          onClick={() => setSoundPack((prev) => (prev === "off" ? "cherrymx-blue-pbt" : "off"))}
+          onClick={() => setSoundPack((prev) => (prev === "off" ? "classic" : "off"))}
           className={`cursor-pointer px-2 py-0.5 rounded font-semibold transition-all duration-200 flex items-center gap-1.5 ${
             soundPack !== "off"
               ? "text-[#e2b714] bg-[#222222]"
@@ -195,16 +195,20 @@ function TimerSetting({
             onChange={(e) => setSoundPack(e.target.value)}
             className="bg-[#121212] text-[#888888] hover:text-[#dddddd] font-semibold border-none focus:outline-none cursor-pointer pl-1 text-[11px]"
           >
-            <option value="cherrymx-blue-pbt">CherryMX Blue</option>
-            <option value="cherrymx-brown-pbt">CherryMX Brown</option>
-            <option value="cherrymx-red-pbt">CherryMX Red</option>
-            <option value="Creams">Creams</option>
-            <option value="banana split lubed">Banana Split</option>
+            <option value="classic">Classic (Default)</option>
+            <option value="cherrymx-black-pbt">Cherry MX Black</option>
+            <option value="cherrymx-blue-pbt">Cherry MX Blue</option>
+            <option value="cherrymx-brown-pbt">Cherry MX Brown</option>
+            <option value="cherrymx-red-pbt">Cherry MX Red</option>
+            <option value="mx-speed-silver">MX Speed Silver</option>
+            <option value="eg-oreo">EG Oreo</option>
             <option value="topre-purple-hybrid-pbt">Topre Purple</option>
-            <option value="mx-speed-silver">Speed Silver</option>
+            <option value="Creams">Creams</option>
+            <option value="banana split lubed">Banana Split Lubed</option>
           </select>
         )}
       </div>
+
 
       {/* Group 5: Mouse Click Sound */}
       <div className="flex items-center gap-1.5 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl">

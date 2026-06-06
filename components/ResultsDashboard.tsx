@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 const chartWidth = 750;
-const chartHeight = 220;
-const chartPadding = { top: 20, right: 20, bottom: 30, left: 45 };
+const chartHeight = 350;
+const chartPadding = { top: 15, right: 15, bottom: 25, left: 35 };
 
 interface ResultsDashboardProps {
   wpm: number;
@@ -19,7 +19,13 @@ interface ResultsDashboardProps {
   hasPunctuation: boolean;
   hasNumbers: boolean;
   difficulty: "easy" | "hard";
-  history: { second: number; wpm: number; rawWpm: number }[];
+  history: {
+    second: number;
+    wpm: number;
+    rawWpm: number;
+    errors?: number;
+    burst?: number;
+  }[];
   handleRestart: (forcePractice?: boolean) => void;
   copyResultsReport: () => void;
   downloadResults: () => void;
@@ -52,6 +58,20 @@ export default function ResultsDashboard({
   setShowWordReview,
   toastMessage,
 }: ResultsDashboardProps) {
+  const [hoveredPoint, setHoveredPoint] = useState<{
+    x: number;
+    y: number;
+    second: number;
+    wpm: number;
+    rawWpm: number;
+    errors: number;
+    burst: number;
+  } | null>(null);
+
+  const clampedPercent = hoveredPoint ? Math.max(15, Math.min(85, (hoveredPoint.y / chartHeight) * 100)) : 0;
+  const diffPercent = hoveredPoint ? ((hoveredPoint.y / chartHeight) * 100) - clampedPercent : 0;
+  const arrowTop = hoveredPoint ? Math.max(12, Math.min(88, 50 + diffPercent * 2.7)) : 50;
+  const isRightHalf = hoveredPoint ? hoveredPoint.second > (history[history.length - 1]?.second || 30) / 2 : false;
   // Calculate the maximum speed value in history (round up to nearest 10, min 40)
   const maxChartSpeed = useMemo(() => {
     if (history.length === 0) return 40;
@@ -67,7 +87,8 @@ export default function ResultsDashboard({
       const y =
         chartHeight -
         chartPadding.bottom -
-        (val / maxChartSpeed) * (chartHeight - chartPadding.top - chartPadding.bottom);
+        (val / maxChartSpeed) *
+          (chartHeight - chartPadding.top - chartPadding.bottom);
       lines.push({ val, y });
     }
     return lines;
@@ -81,11 +102,13 @@ export default function ResultsDashboard({
     const getCoords = (sec: number, val: number) => {
       const x =
         chartPadding.left +
-        (sec / duration) * (chartWidth - chartPadding.left - chartPadding.right);
+        (sec / duration) *
+          (chartWidth - chartPadding.left - chartPadding.right);
       const y =
         chartHeight -
         chartPadding.bottom -
-        (val / maxChartSpeed) * (chartHeight - chartPadding.top - chartPadding.bottom);
+        (val / maxChartSpeed) *
+          (chartHeight - chartPadding.top - chartPadding.bottom);
       return { x, y };
     };
 
@@ -158,7 +181,11 @@ export default function ResultsDashboard({
               strokeWidth="2.5"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             {toastMessage}
           </motion.div>
@@ -185,7 +212,7 @@ export default function ResultsDashboard({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  title="Words Per Minute (correct chars / 5) / (minutes)"
+                  // title="Words Per Minute (correct chars / 5) / (minutes)"
                 >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="16" x2="12" y2="12" />
@@ -227,7 +254,9 @@ export default function ResultsDashboard({
               <span className="text-[#444444] text-[11px] font-bold uppercase tracking-wider">
                 test type
               </span>
-              <span className="text-[#e2b714] font-semibold uppercase">time {timer}</span>
+              <span className="text-[#e2b714] font-semibold uppercase">
+                time {timer}
+              </span>
               <span className="text-slate-400 capitalize">
                 english
                 {hasPunctuation && " + punctuation"}
@@ -238,7 +267,7 @@ export default function ResultsDashboard({
           </div>
 
           {/* SVG Chart area */}
-          <div className="md:col-span-3 flex flex-col justify-end w-full bg-[#050505]/30 border border-[#111111] rounded-2xl p-4">
+          <div className="md:col-span-3 flex flex-col justify-center w-full py-1">
             {history.length > 1 ? (
               <div className="relative w-full overflow-x-auto">
                 <svg
@@ -274,8 +303,14 @@ export default function ResultsDashboard({
                   {/* Y-Axis title rotated */}
                   <text
                     transform="rotate(-90)"
-                    x={-((chartHeight - chartPadding.top - chartPadding.bottom) / 2 + chartPadding.top)}
-                    y="14"
+                    x={
+                      -(
+                        (chartHeight - chartPadding.top - chartPadding.bottom) /
+                          2 +
+                        chartPadding.top
+                      )
+                    }
+                    y="10"
                     fill="#444444"
                     fontSize="9"
                     textAnchor="middle"
@@ -307,29 +342,125 @@ export default function ResultsDashboard({
                   )}
 
                   {/* Dot markers on WPM path */}
-                  {chartPaths.dots.map((dot, idx) => (
+                  {chartPaths.dots.map((dot, idx) => {
+                    const isHovered = hoveredPoint?.second === dot.second;
+                    return (
+                      <circle
+                        key={idx}
+                        cx={dot.x}
+                        cy={dot.y}
+                        r={isHovered ? 5.5 : 3}
+                        fill="#e2b714"
+                        stroke="#000000"
+                        strokeWidth="1"
+                        style={{ transition: "r 0.08s ease" }}
+                        className="pointer-events-none"
+                      />
+                    );
+                  })}
+
+                  {/* Red 'x' markers at the bottom for errors */}
+                  {history.map((p, idx) => {
+                    if (!p.errors || p.errors <= 0) return null;
+                    const duration = history[history.length - 1].second;
+                    const x =
+                      chartPadding.left +
+                      (p.second / duration) *
+                        (chartWidth - chartPadding.left - chartPadding.right);
+                    const y = chartHeight - chartPadding.bottom - 10;
+                    return (
+                      <text
+                        key={`err-x-${idx}`}
+                        x={x}
+                        y={y}
+                        fill="#ca4754"
+                        fontSize="10"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        className="pointer-events-none select-none cursor-default font-mono"
+                      >
+                        ×
+                      </text>
+                    );
+                  })}
+
+                  {/* Vertical Guide Line when hovering */}
+                  {hoveredPoint && (
+                    <line
+                      x1={hoveredPoint.x}
+                      y1={chartPadding.top}
+                      x2={hoveredPoint.x}
+                      y2={chartHeight - chartPadding.bottom}
+                      stroke="#222222"
+                      strokeWidth="1.5"
+                      strokeDasharray="3 3"
+                      pointerEvents="none"
+                    />
+                  )}
+
+                  {/* Highlighted Raw WPM dot when hovering */}
+                  {hoveredPoint && (
                     <circle
-                      key={idx}
-                      cx={dot.x}
-                      cy={dot.y}
-                      r="3"
-                      fill="#e2b714"
+                      cx={hoveredPoint.x}
+                      cy={
+                        chartHeight -
+                        chartPadding.bottom -
+                        ((hoveredPoint.rawWpm ?? 0) / maxChartSpeed) *
+                          (chartHeight - chartPadding.top - chartPadding.bottom)
+                      }
+                      r="4.5"
+                      fill="#dddddd"
                       stroke="#000000"
                       strokeWidth="1"
-                      className="cursor-pointer transition-transform hover:scale-150"
-                    >
-                      <title>
-                        Second {dot.second}: {dot.wpm} WPM (raw: {dot.rawWpm})
-                      </title>
-                    </circle>
-                  ))}
+                      pointerEvents="none"
+                    />
+                  )}
+
+                  {/* Invisible hover columns for smooth snapping tooltip */}
+                  {history.map((p, idx) => {
+                    const duration = history[history.length - 1].second;
+                    const x =
+                      chartPadding.left +
+                      (p.second / duration) *
+                        (chartWidth - chartPadding.left - chartPadding.right);
+                    const colWidth =
+                      (chartWidth - chartPadding.left - chartPadding.right) /
+                      duration;
+
+                    return (
+                      <rect
+                        key={`hover-${idx}`}
+                        x={x - colWidth / 2}
+                        y={chartPadding.top}
+                        width={colWidth}
+                        height={
+                          chartHeight - chartPadding.top - chartPadding.bottom
+                        }
+                        fill="transparent"
+                        className="cursor-pointer"
+                        onMouseEnter={() =>
+                          setHoveredPoint({
+                            x,
+                            y: chartPaths.dots[idx]?.y || 0,
+                            second: p.second,
+                            wpm: p.wpm,
+                            rawWpm: p.rawWpm,
+                            errors: p.errors ?? 0,
+                            burst: p.burst ?? 0,
+                          })
+                        }
+                        onMouseLeave={() => setHoveredPoint(null)}
+                      />
+                    );
+                  })}
 
                   {/* X-Axis Tick Labels (Time in seconds) */}
                   {timeLabels.map((sec, idx) => {
                     const duration = history[history.length - 1].second;
                     const x =
                       chartPadding.left +
-                      (sec / duration) * (chartWidth - chartPadding.left - chartPadding.right);
+                      (sec / duration) *
+                        (chartWidth - chartPadding.left - chartPadding.right);
                     return (
                       <text
                         key={idx}
@@ -345,9 +476,80 @@ export default function ResultsDashboard({
                     );
                   })}
                 </svg>
+
+                {hoveredPoint && (
+                  <div
+                    style={{
+                      left: `${(hoveredPoint.x / chartWidth) * 100}%`,
+                      top: `${clampedPercent}%`,
+                      transform: isRightHalf
+                        ? "translate(calc(-100% - 12px), -50%)"
+                        : "translate(12px, -50%)",
+                    }}
+                    className="absolute z-40 bg-[#0b0c0f] border border-[#222222] text-[11px] text-[#dddddd] p-2.5 rounded-lg shadow-xl pointer-events-none font-mono min-w-[125px] flex flex-col gap-1"
+                  >
+                    {/* Pointer arrow */}
+                    <div
+                      style={{ top: `${arrowTop}%` }}
+                      className={`absolute -translate-y-1/2 w-2 h-2 bg-[#0b0c0f] border-[#222222] rotate-45 ${
+                        isRightHalf
+                          ? "-right-1 border-r border-t"
+                          : "-left-1 border-l border-b"
+                      }`}
+                    />
+
+                    <div className="text-white font-bold text-xs border-b border-[#222222]/60 pb-1 mb-1">
+                      second {hoveredPoint.second}
+                    </div>
+
+                    {/* errors */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-[#ca4754] rounded-sm" />
+                        <span className="text-slate-400">errors</span>
+                      </div>
+                      <span className="font-bold text-slate-200">
+                        {hoveredPoint.errors}
+                      </span>
+                    </div>
+
+                    {/* wpm */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-[#e2b714] rounded-sm" />
+                        <span className="text-slate-400">wpm</span>
+                      </div>
+                      <span className="font-bold text-[#e2b714]">
+                        {hoveredPoint.wpm}
+                      </span>
+                    </div>
+
+                    {/* raw */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-[#dddddd] rounded-sm" />
+                        <span className="text-slate-400">raw</span>
+                      </div>
+                      <span className="font-bold text-slate-200">
+                        {hoveredPoint.rawWpm}
+                      </span>
+                    </div>
+
+                    {/* burst */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-[#666666] rounded-sm" />
+                        <span className="text-slate-400">burst</span>
+                      </div>
+                      <span className="font-bold text-slate-200">
+                        {hoveredPoint.burst}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="h-[220px] flex items-center justify-center text-xs text-[#444444] font-mono">
+              <div className="h-[350px] flex items-center justify-center text-xs text-[#444444] font-mono">
                 No chart data available (test completed too quickly)
               </div>
             )}
@@ -404,7 +606,9 @@ export default function ResultsDashboard({
             <span className="text-[#444444] text-[11px] font-bold uppercase tracking-wider">
               fixes
             </span>
-            <span className="text-3xl font-bold text-slate-200 mt-1 select-text">{fixes}</span>
+            <span className="text-3xl font-bold text-slate-200 mt-1 select-text">
+              {fixes}
+            </span>
             <span className="text-[10px] text-[#444444] mt-0.5 leading-tight">
               Backspaces on wrong chars
             </span>
@@ -420,7 +624,9 @@ export default function ResultsDashboard({
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden bg-[#090909] border border-[#161616] rounded-xl p-4 mt-2"
             >
-              <h3 className="text-sm font-semibold text-[#e2b714] mb-3">Words with Mistakes</h3>
+              <h3 className="text-sm font-semibold text-[#e2b714] mb-3">
+                Words with Mistakes
+              </h3>
               {incorrectWords.length > 0 ? (
                 <div className="flex flex-wrap gap-2 text-xs">
                   {incorrectWords.map((word, idx) => (
@@ -433,7 +639,9 @@ export default function ResultsDashboard({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-[#444444]">No mistakes! Perfect run!</p>
+                <p className="text-xs text-[#444444]">
+                  No mistakes! Perfect run!
+                </p>
               )}
             </motion.div>
           )}
@@ -454,7 +662,11 @@ export default function ResultsDashboard({
               strokeWidth="2"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+              />
             </svg>
             Next Test
           </button>
@@ -547,7 +759,13 @@ export default function ResultsDashboard({
             >
               <circle cx="12" cy="12" r="10" stroke="currentColor" />
               <circle cx="12" cy="12" r="6" stroke="currentColor" />
-              <circle cx="12" cy="12" r="2" stroke="currentColor" fill="currentColor" />
+              <circle
+                cx="12"
+                cy="12"
+                r="2"
+                stroke="currentColor"
+                fill="currentColor"
+              />
             </svg>
             Practice Words
           </button>

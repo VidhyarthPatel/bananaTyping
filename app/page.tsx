@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import Nav from "@/components/Nav";
-import PlayGround2 from "@/components/PlayGround2";
+import Playground from "@/components/Playground";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <Container className="h-screen flex flex-col px-12 py-8 max-w-none w-full">
         <Nav />
         <div className="flex items-center justify-center flex-1">
-          <PlayGround2 />
+          <Playground />
         </div>
       </Container>
     </main>

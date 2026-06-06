@@ -12,7 +12,7 @@ const isValidTypingKey = (
   key: string,
   ctrlKey: boolean,
   metaKey: boolean,
-  altKey: boolean
+  altKey: boolean,
 ): boolean => {
   return key.length === 1 && !ctrlKey && !metaKey && !altKey;
 };
@@ -31,7 +31,10 @@ const calculateWpm = (correctChars: number, elapsedSeconds: number): number => {
  * Helper: Calculate Typing Accuracy
  * Calculated as (correct characters / total typed characters) * 100.
  */
-const calculateAccuracy = (correctChars: number, totalTyped: number): number => {
+const calculateAccuracy = (
+  correctChars: number,
+  totalTyped: number,
+): number => {
   if (totalTyped <= 0) return 0;
   return Math.round((correctChars / totalTyped) * 100);
 };
@@ -42,15 +45,15 @@ const calculateAccuracy = (correctChars: number, totalTyped: number): number => 
 const getWordCountForTimer = (time: number): number => {
   switch (time) {
     case 15:
-      return 40;
+      return 60;
     case 30:
-      return 75;
+      return 80;
     case 60:
       return 150;
     case 120:
       return 300;
     default:
-      return 75;
+      return 80;
   }
 };
 
@@ -70,14 +73,26 @@ export function useTypingTest() {
   const [difficulty, setDifficulty] = useState<"easy" | "hard">("easy");
 
   // States for smooth absolute caret cursor and scrolling viewport
-  const [cursorStyle, setCursorStyle] = useState({ left: 0, top: 0, height: 0 });
+  const [cursorStyle, setCursorStyle] = useState({
+    left: 0,
+    top: 0,
+    height: 0,
+  });
   const [scrollOffset, setScrollOffset] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [resizeTrigger, setResizeTrigger] = useState(0);
 
-  // Redesigned dashboard states
-  const [history, setHistory] = useState<{ second: number; wpm: number; rawWpm: number }[]>([]);
+  // dashboard states
+  const [history, setHistory] = useState<
+    {
+      second: number;
+      wpm: number;
+      rawWpm: number;
+      errors?: number;
+      burst?: number;
+    }[]
+  >([]);
   const [fixes, setFixes] = useState(0);
   const [personalBest, setPersonalBest] = useState<number>(0);
   const [isNewPersonalBest, setIsNewPersonalBest] = useState(false);
@@ -94,6 +109,9 @@ export function useTypingTest() {
   const typedRef = useRef(typed);
   const textRef = useRef(text);
   const totalKeystrokesRef = useRef(0);
+  const errorsThisSecondRef = useRef(0);
+  const correctCharsThisSecondRef = useRef(0);
+  const keystrokesThisSecondRef = useRef(0);
 
   // Sync refs with state
   useEffect(() => {
@@ -128,12 +146,12 @@ export function useTypingTest() {
 
   const wpm = useMemo(
     () => calculateWpm(correctChars, elapsedSeconds),
-    [correctChars, elapsedSeconds]
+    [correctChars, elapsedSeconds],
   );
 
   const accuracy = useMemo(
     () => calculateAccuracy(correctChars, totalKeystrokes),
-    [correctChars, totalKeystrokes]
+    [correctChars, totalKeystrokes],
   );
 
   const rawWpm = useMemo(() => {
@@ -177,7 +195,7 @@ export function useTypingTest() {
           wordCount,
           hasPunctuation,
           hasNumbers,
-          difficulty
+          difficulty,
         );
         setIsPracticeMode(false);
       }
@@ -198,8 +216,18 @@ export function useTypingTest() {
       setIsNewPersonalBest(false);
       setShowWordReview(false);
       setTotalKeystrokes(0);
+      errorsThisSecondRef.current = 0;
+      correctCharsThisSecondRef.current = 0;
+      keystrokesThisSecondRef.current = 0;
     },
-    [timer, hasPunctuation, hasNumbers, difficulty, isPracticeMode, incorrectWords]
+    [
+      timer,
+      hasPunctuation,
+      hasNumbers,
+      difficulty,
+      isPracticeMode,
+      incorrectWords,
+    ],
   );
 
   // Restart the test whenever any configuration changes
@@ -256,12 +284,18 @@ export function useTypingTest() {
       if (!isValid) return;
 
       // Stop appending characters if we've reached the end of the text
-      setTyped((prev) => {
-        if (prev.length >= text.length) return prev;
-        setTotalKeystrokes((total) => total + 1);
-        return prev + e.key;
-      });
+      if (typed.length >= text.length) return;
 
+      const expectedChar = text[typed.length];
+      if (e.key === expectedChar) {
+        correctCharsThisSecondRef.current += 1;
+      } else {
+        errorsThisSecondRef.current += 1;
+      }
+      keystrokesThisSecondRef.current += 1;
+
+      setTyped((prev) => prev + e.key);
+      setTotalKeystrokes((total) => total + 1);
       setIsTyping(true);
 
       // Start the test and record start time on first valid character
@@ -374,7 +408,7 @@ export function useTypingTest() {
         15,
         hasPunctuation,
         hasNumbers,
-        difficulty
+        difficulty,
       );
       setText((prev) => prev + " " + extraWords);
     } else if (maxLine > targetMaxLine) {
@@ -406,7 +440,9 @@ export function useTypingTest() {
     if (!isStarted || isFinished) return;
 
     const interval = setInterval(() => {
-      const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+      const elapsed = startTime
+        ? Math.round((Date.now() - startTime) / 1000)
+        : 0;
       if (elapsed > 0) {
         const currentTyped = typedRef.current;
         const currentText = textRef.current;
@@ -422,12 +458,27 @@ export function useTypingTest() {
         const elapsedMinutes = elapsed / 60;
         const currentWpm = Math.round(currentCorrect / 5 / elapsedMinutes);
         const currentRawWpm = Math.round(
-          totalKeystrokesRef.current / 5 / elapsedMinutes
+          totalKeystrokesRef.current / 5 / elapsedMinutes,
         );
+
+        const currentErrors = errorsThisSecondRef.current;
+        const currentCorrectThisSecond = correctCharsThisSecondRef.current;
+        const currentBurst = currentCorrectThisSecond * 12; // WPM for this 1s interval
+
+        // Reset interval counters
+        errorsThisSecondRef.current = 0;
+        correctCharsThisSecondRef.current = 0;
+        keystrokesThisSecondRef.current = 0;
 
         setHistory((prev) => [
           ...prev,
-          { second: elapsed, wpm: currentWpm, rawWpm: currentRawWpm },
+          {
+            second: elapsed,
+            wpm: currentWpm,
+            rawWpm: currentRawWpm,
+            errors: currentErrors,
+            burst: currentBurst,
+          },
         ]);
       }
 
@@ -443,14 +494,6 @@ export function useTypingTest() {
 
     return () => clearInterval(interval);
   }, [isStarted, isFinished, startTime]);
-
-  // Completion Detection Effect
-  useEffect(() => {
-    if (isStarted && !isFinished && text && typed.length === text.length) {
-      setFinished(true);
-      setEndTime(Date.now());
-    }
-  }, [typed, text, isStarted, isFinished]);
 
   const calculateIncorrectWords = useCallback(() => {
     const words = textRef.current.split(" ");
@@ -472,7 +515,10 @@ export function useTypingTest() {
       }
 
       const spaceGlobalIndex = currentIndex + wordLen;
-      if (spaceGlobalIndex < currentTyped.length && wordIdx < words.length - 1) {
+      if (
+        spaceGlobalIndex < currentTyped.length &&
+        wordIdx < words.length - 1
+      ) {
         if (currentTyped[spaceGlobalIndex] !== " ") {
           isWordBad = true;
         }
@@ -554,12 +600,15 @@ export function useTypingTest() {
             timestamp: new Date().toISOString(),
           },
           null,
-          2
-        )
+          2,
+        ),
       );
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `minttyping_result_${Date.now()}.json`);
+    downloadAnchor.setAttribute(
+      "download",
+      `minttyping_result_${Date.now()}.json`,
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

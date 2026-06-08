@@ -209,9 +209,9 @@ export default function ResultsDashboard({
         {/* Upper Section: Big Stats & SVG Graph */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
           {/* WPM, Accuracy, Personal Best panel */}
-          <div className="flex flex-col gap-6 md:col-span-1">
+          <div className="flex flex-row md:flex-col justify-between md:justify-start gap-4 md:gap-6 flex-wrap md:col-span-1">
             {/* WPM metric */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-[80px]">
               <span className="text-[#444444] text-[13px] font-semibold tracking-wider flex items-center">
                 wpm
                 <svg
@@ -226,32 +226,32 @@ export default function ResultsDashboard({
                   <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
               </span>
-              <span className="text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
+              <span className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
                 {wpm}
               </span>
             </div>
 
             {/* Accuracy metric */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-[80px]">
               <span className="text-[#444444] text-[13px] font-semibold tracking-wider">
                 accuracy
               </span>
-              <span className="text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
+              <span className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
                 {accuracy}%
               </span>
             </div>
 
             {/* Personal Best metric */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-[80px]">
               <span className="text-[#444444] text-[13px] font-semibold tracking-wider">
                 personal best
               </span>
-              <span className="text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
+              <span className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#e2b714] mt-1 leading-none select-text">
                 {personalBest}
               </span>
               {isNewPersonalBest && (
                 <span className="text-[10px] font-bold text-[#e2b714] uppercase tracking-widest mt-1">
-                  ✨ new personal best!
+                  ✨ new pb!
                 </span>
               )}
             </div>

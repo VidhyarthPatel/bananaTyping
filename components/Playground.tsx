@@ -51,10 +51,14 @@ function Playground() {
     setSoundPack,
     clickSound,
     setClickSound,
+    isSettingsOpen,
+    setSettingsOpen,
+    glowPreference,
+    setGlowPreference,
   } = useTypingTest();
 
   return (
-    <div className="w-full max-w-none flex flex-col gap-6 select-none">
+    <div className="w-full max-w-none flex flex-col flex-1 gap-6 select-none">
       {/* Keyboard Sound player */}
       <KeyboardSoundManager soundPack={soundPack} clickSound={clickSound} />
       {/* CSS Styles for stepping cursor blinking when idle */}
@@ -69,7 +73,7 @@ function Playground() {
       `}</style>
 
       {/* Top Bar: Live Timer or Settings */}
-      <div className="flex items-center justify-between h-12">
+      <div className="flex items-center justify-between min-h-12 h-auto py-2">
         <div className="text-2xl font-mono text-[#e2b714] font-bold">
           {!isFinished && isStarted && <span>{timeLeft}</span>}
         </div>
@@ -93,10 +97,6 @@ function Playground() {
                 setHasNumbers={setHasNumbers}
                 difficulty={difficulty}
                 setDifficulty={setDifficulty}
-                soundPack={soundPack}
-                setSoundPack={setSoundPack}
-                clickSound={clickSound}
-                setClickSound={setClickSound}
               />
             </motion.div>
           )}
@@ -104,7 +104,7 @@ function Playground() {
       </div>
 
       {/* Main Sandbox Area */}
-      <div className="min-h-[240px] flex items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[240px]">
         {isFinished ? (
           <ResultsDashboard
             wpm={wpm}
@@ -130,7 +130,7 @@ function Playground() {
             toastMessage={toastMessage}
           />
         ) : (
-          <div className="w-full flex flex-col gap-4 mt-4">
+          <div className="w-full flex-1 flex flex-col gap-4 mt-4">
             {/* Globe Language Header */}
             <div className="flex items-center justify-center gap-1.5 text-xs text-[#444444] font-mono select-none mb-2">
               <svg
@@ -165,10 +165,14 @@ function Playground() {
               containerRef={containerRef}
               wordsListRef={wordsListRef}
               activeCharRef={activeCharRef}
+              wpm={wpm}
+              isStarted={isStarted}
+              isFinished={isFinished}
+              glowPreference={glowPreference}
             />
 
             {/* Refresh Restart Button below the text */}
-            <div className="flex flex-col items-center justify-center mt-6 gap-3">
+            <div className="flex flex-col items-center justify-center mt-auto mb-4 gap-3">
               <button
                 onClick={() => handleRestart()}
                 className="text-[#444444] hover:text-[#e2b714] transition-colors duration-200 focus:outline-none p-2 cursor-pointer group"
@@ -205,6 +209,193 @@ function Playground() {
           </div>
         )}
       </div>
+      {/* </div> */}
+
+      {/* Settings Sidebar Slider Overlay */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <>
+            {/* Backdrop Blur Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSettingsOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 cursor-pointer"
+            />
+
+            {/* Sidebar Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="fixed right-0 top-0 bottom-0 w-80 max-w-[90vw] bg-[#090909]/95 border-l border-[#222222]/80 z-50 p-6 flex flex-col gap-6 text-[#dddddd] font-mono shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#222222]/80 pb-4">
+                <h2 className="text-lg font-bold text-[#e2b714] flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.645-.869l.214-1.28z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Settings
+                </h2>
+                <button
+                  onClick={() => setSettingsOpen(false)}
+                  className="text-[#444444] hover:text-[#dddddd] transition-colors cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Settings Groups */}
+              <div className="flex flex-col gap-6 overflow-y-auto pr-1">
+                {/* Section 1: Audio Preference */}
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                    Audio Preference
+                  </h3>
+
+                  {/* Key sound setting */}
+                  <div className="flex flex-col gap-3 bg-[#121212] border border-[#222222]/60 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold">
+                        Key Sounds
+                      </span>
+                      <button
+                        onClick={() =>
+                          setSoundPack(soundPack === "off" ? "classic" : "off")
+                        }
+                        className={`cursor-pointer w-10 h-5 rounded-full transition-colors relative ${soundPack !== "off" ? "bg-[#e2b714]" : "bg-[#222222]"}`}
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 bg-black rounded-full absolute top-[3px] transition-transform duration-200 ${soundPack !== "off" ? "left-[22px]" : "left-[4px]"}`}
+                        />
+                      </button>
+                    </div>
+
+                    {soundPack !== "off" && (
+                      <div className="flex flex-col gap-1.5 mt-1">
+                        <span className="text-[10px] text-[#555555]">
+                          Sound Pack
+                        </span>
+                        <select
+                          value={soundPack}
+                          onChange={(e) => setSoundPack(e.target.value)}
+                          className="bg-[#090909] text-[#888888] hover:text-[#dddddd] font-semibold border border-[#222222] rounded px-2.5 py-1.5 focus:outline-none cursor-pointer text-[12px] w-full"
+                        >
+                          <option value="classic">Classic (Default)</option>
+                          <option value="cherrymx-black-pbt">
+                            Cherry MX Black
+                          </option>
+                          <option value="cherrymx-blue-pbt">
+                            Cherry MX Blue
+                          </option>
+                          <option value="cherrymx-brown-pbt">
+                            Cherry MX Brown
+                          </option>
+                          <option value="cherrymx-red-pbt">
+                            Cherry MX Red
+                          </option>
+                          <option value="mx-speed-silver">
+                            MX Speed Silver
+                          </option>
+                          <option value="eg-oreo">EG Oreo</option>
+                          <option value="topre-purple-hybrid-pbt">
+                            Topre Purple
+                          </option>
+                          <option value="Creams">Creams</option>
+                          <option value="banana split lubed">
+                            Banana Split Lubed
+                          </option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Click sound setting */}
+                  <div className="flex items-center justify-between bg-[#121212] border border-[#222222]/60 p-4 rounded-xl">
+                    <span className="text-[13px] font-semibold">
+                      Click Sounds
+                    </span>
+                    <button
+                      onClick={() =>
+                        setClickSound(clickSound === "on" ? "off" : "on")
+                      }
+                      className={`cursor-pointer w-10 h-5 rounded-full transition-colors relative ${clickSound === "on" ? "bg-[#e2b714]" : "bg-[#222222]"}`}
+                    >
+                      <div
+                        className={`w-3.5 h-3.5 bg-black rounded-full absolute top-[3px] transition-transform duration-200 ${clickSound === "on" ? "left-[22px]" : "left-[4px]"}`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Section 2: Visual Preference */}
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                    Visual Preference
+                  </h3>
+
+                  {/* Speed Glow Setting */}
+                  <div className="flex flex-col gap-2 bg-[#121212] border border-[#222222]/60 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold">
+                        WPM Speed Glow
+                      </span>
+                      <button
+                        onClick={() =>
+                          setGlowPreference(
+                            glowPreference === "on" ? "off" : "on",
+                          )
+                        }
+                        className={`cursor-pointer w-10 h-5 rounded-full transition-colors relative ${glowPreference === "on" ? "bg-[#e2b714]" : "bg-[#222222]"}`}
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 bg-black rounded-full absolute top-[3px] transition-transform duration-200 ${glowPreference === "on" ? "left-[22px]" : "left-[4px]"}`}
+                        />
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-[#555555] leading-relaxed mt-1">
+                      Enables speed streak alerts, active caret shadow glows,
+                      and floating sparks as your WPM speed increases.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -252,6 +252,12 @@ const playKeySound = (keyCode: number, code: string, cacheItem: AudioCacheItem) 
     return;
   }
 
+  // Check if it is the Creams pack (plays 0-69ms for all keys)
+  if (config.sound === "Creams.ogg" && buffer) {
+    playSlice(0, 69, buffer);
+    return;
+  }
+
   const define = config.defines[keyCode.toString()];
 
   if (type === "multi") {

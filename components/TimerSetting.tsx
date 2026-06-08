@@ -10,10 +10,6 @@ interface TimerSettingProps {
   setHasNumbers: React.Dispatch<React.SetStateAction<boolean>>;
   difficulty: "easy" | "hard";
   setDifficulty: React.Dispatch<React.SetStateAction<"easy" | "hard">>;
-  soundPack: string;
-  setSoundPack: React.Dispatch<React.SetStateAction<string>>;
-  clickSound: string;
-  setClickSound: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function TimerSetting({
@@ -26,10 +22,6 @@ function TimerSetting({
   setHasNumbers,
   difficulty,
   setDifficulty,
-  soundPack,
-  setSoundPack,
-  clickSound,
-  setClickSound,
 }: TimerSettingProps) {
   const times = [15, 30, 60, 120];
 
@@ -51,8 +43,8 @@ function TimerSetting({
               : "text-[#444444] hover:text-[#dddddd]"
           }`}
         >
-          <span className="text-[10px] mr-1">@</span>
-          punctuation
+          <span className="text-[10px] sm:mr-1">@</span>
+          <span className="hidden sm:inline">punctuation</span>
         </button>
 
         {/* Numbers toggle */}
@@ -64,8 +56,8 @@ function TimerSetting({
               : "text-[#444444] hover:text-[#dddddd]"
           }`}
         >
-          <span className="text-[10px] mr-1">#</span>
-          numbers
+          <span className="text-[10px] sm:mr-1">#</span>
+          <span className="hidden sm:inline">numbers</span>
         </button>
 
         <span className="w-[1px] h-3.5 bg-[#222222] mx-1"></span>
@@ -88,7 +80,7 @@ function TimerSetting({
             <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
             <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
           </svg>
-          easy
+          <span className="hidden sm:inline">easy</span>
         </button>
 
         {/* Hard mode select */}
@@ -112,13 +104,13 @@ function TimerSetting({
               clipRule="evenodd"
             />
           </svg>
-          hard
+          <span className="hidden sm:inline">hard</span>
         </button>
       </div>
 
       {/* Group 2: Categories (Mockup visual) */}
-      <div className="flex items-center gap-2 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl">
-        <span className="text-[#e2b714] bg-[#222222] px-2.5 py-0.5 rounded font-semibold flex items-center gap-1.5">
+      <div className="flex items-center gap-2 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl max-w-full overflow-x-auto whitespace-nowrap scrollbar-none">
+        <span className="text-[#e2b714] bg-[#222222] px-2.5 py-0.5 rounded font-semibold flex items-center gap-1.5 shrink-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -131,12 +123,12 @@ function TimerSetting({
           </svg>
           time
         </span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">words</span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">quote</span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">zen</span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">brain rot</span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">code</span>
-        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors">custom</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">words</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">quote</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">zen</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">brain rot</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">code</span>
+        <span className="cursor-not-allowed px-2 py-0.5 hover:text-[#dddddd]/60 transition-colors shrink-0">custom</span>
       </div>
 
       {/* Group 3: Durations */}
@@ -154,96 +146,6 @@ function TimerSetting({
             {time}
           </button>
         ))}
-      </div>
-
-      {/* Group 4: Keyboard Sound */}
-      <div className="flex items-center gap-1.5 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl">
-        <button
-          onClick={() => setSoundPack((prev) => (prev === "off" ? "classic" : "off"))}
-          className={`cursor-pointer px-2 py-0.5 rounded font-semibold transition-all duration-200 flex items-center gap-1.5 ${
-            soundPack !== "off"
-              ? "text-[#e2b714] bg-[#222222]"
-              : "text-[#444444] hover:text-[#dddddd]"
-          }`}
-        >
-          {soundPack !== "off" ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-3.5 h-3.5"
-            >
-              <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.063.922-2.063 2.063v4.875c0 1.141.922 2.062 2.063 2.062h1.932l4.5 4.5c.944.945 2.56.276 2.56-1.06V4.06zM18.57 17.47a.75.75 0 11-1.06 1.06 8.25 8.25 0 000-11.66.75.75 0 111.06 1.06 6.75 6.75 0 010 9.54z" />
-              <path d="M21.369 20.27a.75.75 0 11-1.06 1.06 12.25 12.25 0 000-17.32.75.75 0 111.06 1.06 10.75 10.75 0 010 15.2z" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-3.5 h-3.5"
-            >
-              <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.063.922-2.063 2.063v4.875c0 1.141.922 2.062 2.063 2.062h1.932l4.5 4.5c.944.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 001.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l2.25-2.25a.75.75 0 00-1.06-1.06L20.56 12l1.72-1.72a.75.75 0 00-1.06-1.06l-1.72 1.72-1.72-1.72z" />
-            </svg>
-          )}
-          key sound
-        </button>
-
-        {soundPack !== "off" && (
-          <select
-            value={soundPack}
-            onChange={(e) => setSoundPack(e.target.value)}
-            className="bg-[#121212] text-[#888888] hover:text-[#dddddd] font-semibold border-none focus:outline-none cursor-pointer pl-1 text-[11px]"
-          >
-            <option value="classic">Classic (Default)</option>
-            <option value="cherrymx-black-pbt">Cherry MX Black</option>
-            <option value="cherrymx-blue-pbt">Cherry MX Blue</option>
-            <option value="cherrymx-brown-pbt">Cherry MX Brown</option>
-            <option value="cherrymx-red-pbt">Cherry MX Red</option>
-            <option value="mx-speed-silver">MX Speed Silver</option>
-            <option value="eg-oreo">EG Oreo</option>
-            <option value="topre-purple-hybrid-pbt">Topre Purple</option>
-            <option value="Creams">Creams</option>
-            <option value="banana split lubed">Banana Split Lubed</option>
-          </select>
-        )}
-      </div>
-
-
-      {/* Group 5: Mouse Click Sound */}
-      <div className="flex items-center gap-1.5 bg-[#121212] border border-[#222222]/60 px-3 py-1.5 rounded-xl">
-        <button
-          onClick={() => setClickSound((prev) => (prev === "on" ? "off" : "on"))}
-          className={`cursor-pointer px-2 py-0.5 rounded font-semibold transition-all duration-200 flex items-center gap-1.5 ${
-            clickSound === "on"
-              ? "text-[#e2b714] bg-[#222222]"
-              : "text-[#444444] hover:text-[#dddddd]"
-          }`}
-          title="Mouse/Trackpad Click Sound"
-        >
-          {clickSound === "on" ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-3.5 h-3.5"
-            >
-              <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm0 18a8 8 0 118-8 8 8 0 01-8 8z" />
-              <path d="M12 6a6 6 0 106 6 6 6 0 00-6-6zm0 10a4 4 0 114-4 4 4 0 01-4 4z" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-3.5 h-3.5"
-            >
-              <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm0 18a8 8 0 118-8 8 8 0 01-8 8z" />
-              <path d="M4.22 4.22a.75.75 0 000 1.06l14.5 14.5a.75.75 0 001.06-1.06L5.28 4.22a.75.75 0 00-1.06 0z" />
-            </svg>
-          )}
-          click sound
-        </button>
       </div>
     </div>
   );

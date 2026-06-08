@@ -73,6 +73,8 @@ export function useTypingTest() {
   const [difficulty, setDifficulty] = useState<"easy" | "hard">("easy");
   const [soundPack, setSoundPack] = useState("off");
   const [clickSound, setClickSound] = useState("on");
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [glowPreference, setGlowPreference] = useState("on");
 
   // States for smooth absolute caret cursor and scrolling viewport
   const [cursorStyle, setCursorStyle] = useState({
@@ -144,7 +146,7 @@ export function useTypingTest() {
     if (!startTime) return 0;
     const end = endTime || Date.now();
     return (end - startTime) / 1000;
-  }, [startTime, endTime]);
+  }, [startTime, endTime, typed.length, timeLeft]);
 
   const wpm = useMemo(
     () => calculateWpm(correctChars, elapsedSeconds),
@@ -338,9 +340,9 @@ export function useTypingTest() {
       setCursorStyle({ left, top, height });
 
       // Handle scrolling: Keep the active typing line at the 2nd line of a 3-line viewport
-      // Each line has a fixed height of 48px
-      const lineHeight = 48;
-      const activeLine = Math.floor(top / lineHeight);
+      const firstChild = wordsListRef.current.children[0] as HTMLElement;
+      const lineHeight = firstChild ? firstChild.offsetHeight : 56;
+      const activeLine = Math.round(top / lineHeight);
       const scrollLines = Math.max(0, activeLine - 1);
       setScrollOffset(scrollLines * lineHeight);
     };
@@ -370,7 +372,8 @@ export function useTypingTest() {
     const children = wordsListRef.current.children;
     const words = text.split(" ");
     const wordLines: number[] = [];
-    const lineHeight = 48;
+    const firstChild = wordsListRef.current.children[0] as HTMLElement;
+    const lineHeight = firstChild ? firstChild.offsetHeight : 56;
 
     for (let i = 0; i < words.length; i++) {
       const child = children[i] as HTMLElement;
@@ -552,6 +555,32 @@ export function useTypingTest() {
     } else {
       setClickSound("on");
     }
+    const savedGlow = localStorage.getItem("minttyping_glow");
+    if (savedGlow) {
+      setGlowPreference(savedGlow);
+    } else {
+      setGlowPreference("on");
+    }
+
+    // Load timer, punctuation, numbers, and difficulty configurations
+    const savedTimer = localStorage.getItem("minttyping_timer");
+    if (savedTimer) {
+      const parsedTimer = parseInt(savedTimer, 10);
+      setTimer(parsedTimer);
+      setTimeLeft(parsedTimer);
+    }
+    const savedPunctuation = localStorage.getItem("minttyping_punctuation");
+    if (savedPunctuation !== null) {
+      setHasPunctuation(savedPunctuation === "true");
+    }
+    const savedNumbers = localStorage.getItem("minttyping_numbers");
+    if (savedNumbers !== null) {
+      setHasNumbers(savedNumbers === "true");
+    }
+    const savedDifficulty = localStorage.getItem("minttyping_difficulty");
+    if (savedDifficulty === "easy" || savedDifficulty === "hard") {
+      setDifficulty(savedDifficulty as "easy" | "hard");
+    }
   }, []);
 
   // Save sound pack to localStorage
@@ -563,6 +592,31 @@ export function useTypingTest() {
   useEffect(() => {
     localStorage.setItem("minttyping_click_sound", clickSound);
   }, [clickSound]);
+
+  // Save glow preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_glow", glowPreference);
+  }, [glowPreference]);
+
+  // Save timer configuration to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_timer", timer.toString());
+  }, [timer]);
+
+  // Save punctuation configuration to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_punctuation", hasPunctuation.toString());
+  }, [hasPunctuation]);
+
+  // Save numbers configuration to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_numbers", hasNumbers.toString());
+  }, [hasNumbers]);
+
+  // Save difficulty configuration to localStorage
+  useEffect(() => {
+    localStorage.setItem("minttyping_difficulty", difficulty);
+  }, [difficulty]);
 
   // Calculate results & Personal Best when the test finishes
   useEffect(() => {
@@ -656,6 +710,17 @@ export function useTypingTest() {
     };
   }, [handleRestart]);
 
+  // Listen for custom settings sidebar toggle event
+  useEffect(() => {
+    const handleToggleSettings = () => {
+      setSettingsOpen((prev) => !prev);
+    };
+    window.addEventListener("toggle-settings-sidebar", handleToggleSettings);
+    return () => {
+      window.removeEventListener("toggle-settings-sidebar", handleToggleSettings);
+    };
+  }, []);
+
   return {
     timer,
     setTimer,
@@ -703,5 +768,9 @@ export function useTypingTest() {
     setSoundPack,
     clickSound,
     setClickSound,
+    isSettingsOpen,
+    setSettingsOpen,
+    glowPreference,
+    setGlowPreference,
   };
 }

@@ -109,6 +109,7 @@ export function useTypingTest() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const wordsListRef = useRef<HTMLDivElement | null>(null);
   const activeCharRef = useRef<HTMLSpanElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const typedRef = useRef(typed);
   const textRef = useRef(text);
@@ -223,6 +224,12 @@ export function useTypingTest() {
       errorsThisSecondRef.current = 0;
       correctCharsThisSecondRef.current = 0;
       keystrokesThisSecondRef.current = 0;
+
+      // Synchronously clear and focus input to maintain mobile keyboard focus state
+      if (inputRef.current) {
+        inputRef.current.value = "";
+        inputRef.current.focus();
+      }
     },
     [
       timer,
@@ -240,7 +247,7 @@ export function useTypingTest() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timer, hasPunctuation, hasNumbers, difficulty]);
 
-  // Keyboard Event Listener
+  // Keyboard Event Listener for shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape or Tab key to restart the test at any point
@@ -256,56 +263,6 @@ export function useTypingTest() {
           e.preventDefault();
           handleRestart();
         }
-        return;
-      }
-
-      // Handle backspace safely, preventing browser back navigation
-      if (e.key === "Backspace") {
-        e.preventDefault();
-        // In hard mode, Backspace is disabled to enforce perfect accuracy
-        if (difficulty === "hard") {
-          return;
-        }
-
-        // Fixes count increment: check if the character being backspaced was incorrect
-        const lastIndex = typed.length - 1;
-        if (lastIndex >= 0 && typed[lastIndex] !== text[lastIndex]) {
-          setFixes((prev) => prev + 1);
-        }
-
-        setTyped((prev) => prev.slice(0, -1));
-        setIsTyping(true);
-        return;
-      }
-
-      // Prevent space key from scrolling the page
-      if (e.key === " ") {
-        e.preventDefault();
-      }
-
-      // Verify the pressed key is a valid typing character
-      const isValid = isValidTypingKey(e.key, e.ctrlKey, e.metaKey, e.altKey);
-      if (!isValid) return;
-
-      // Stop appending characters if we've reached the end of the text
-      if (typed.length >= text.length) return;
-
-      const expectedChar = text[typed.length];
-      if (e.key === expectedChar) {
-        correctCharsThisSecondRef.current += 1;
-      } else {
-        errorsThisSecondRef.current += 1;
-      }
-      keystrokesThisSecondRef.current += 1;
-
-      setTyped((prev) => prev + e.key);
-      setTotalKeystrokes((total) => total + 1);
-      setIsTyping(true);
-
-      // Start the test and record start time on first valid character
-      if (!isStarted) {
-        setIsStarted(true);
-        setStartTime(Date.now());
       }
     };
 
@@ -313,7 +270,80 @@ export function useTypingTest() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFinished, isStarted, text, handleRestart, difficulty, typed]);
+  }, [isFinished, handleRestart]);
+
+  // Handle character and backspace typing from the hidden input field
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isFinished) return;
+
+    const newValue = e.target.value;
+    const oldLength = typed.length;
+    const newLength = newValue.length;
+
+    // Detect backspace
+    if (newLength < oldLength) {
+      if (difficulty === "hard") {
+        return;
+      }
+
+      const lastIndex = oldLength - 1;
+      if (lastIndex >= 0 && typed[lastIndex] !== text[lastIndex]) {
+        setFixes((prev) => prev + 1);
+      }
+
+      setTyped(newValue);
+      setIsTyping(true);
+      return;
+    }
+
+    // Detect character addition
+    if (newLength > oldLength) {
+      if (oldLength >= text.length) return;
+
+      const addedSubstring = newValue.substring(oldLength);
+      let tempTyped = typed;
+
+      for (let i = 0; i < addedSubstring.length; i++) {
+        if (tempTyped.length >= text.length) break;
+        const char = addedSubstring[i];
+        const expectedChar = text[tempTyped.length];
+
+        if (char === expectedChar) {
+          correctCharsThisSecondRef.current += 1;
+        } else {
+          errorsThisSecondRef.current += 1;
+        }
+        keystrokesThisSecondRef.current += 1;
+        tempTyped += char;
+      }
+
+      setTyped(tempTyped);
+      setTotalKeystrokes((total) => total + addedSubstring.length);
+      setIsTyping(true);
+
+      if (!isStarted) {
+        setIsStarted(true);
+        setStartTime(Date.now());
+      }
+
+      // Play mechanical key sound by dispatching standard keydown event globally
+      if (typeof window !== "undefined") {
+        const lastChar = addedSubstring[addedSubstring.length - 1];
+        let code = "KeyA";
+        if (lastChar === " ") code = "Space";
+        else if (lastChar === "\n") code = "Enter";
+
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: lastChar, code: code }));
+      }
+    }
+  }, [isFinished, typed, text, difficulty, isStarted]);
+
+  // Autofocus input ref when resets trigger
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [resetKey]);
 
   // Reset typing state after a pause to resume cursor blinking
   useEffect(() => {
@@ -772,5 +802,7 @@ export function useTypingTest() {
     setSettingsOpen,
     glowPreference,
     setGlowPreference,
+    inputRef,
+    handleInputChange,
   };
 }

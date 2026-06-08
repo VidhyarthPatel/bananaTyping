@@ -27,6 +27,8 @@ interface TypingSandboxProps {
   isStarted: boolean;
   isFinished: boolean;
   glowPreference: string;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 // Speed thresholds (low values for easy manual testing)
@@ -72,6 +74,8 @@ export default function TypingSandbox({
   isStarted,
   isFinished,
   glowPreference,
+  inputRef,
+  handleInputChange,
 }: TypingSandboxProps) {
   // Parse text into structured words/characters with global indices to prevent layout shifts
   const wordObjects = useMemo<WordMetadata[]>(() => {
@@ -137,7 +141,25 @@ export default function TypingSandbox({
   }, [activeTier, isTyping]);
 
   return (
-    <div className={`relative w-full rounded-2xl border bg-[#090909]/60 backdrop-blur-sm pt-12 pb-6 px-8 transition-all duration-300 ${cardBorderGlowClass}`}>
+    <label
+      htmlFor="typing-input"
+      onClick={() => inputRef.current?.focus()}
+      className={`relative block w-full rounded-2xl border bg-[#090909]/60 backdrop-blur-sm pt-12 pb-6 px-8 transition-all duration-300 ${cardBorderGlowClass} cursor-text`}
+    >
+      {/* Hidden input to catch mobile keyboard keypresses */}
+      <input
+        id="typing-input"
+        ref={inputRef}
+        type="text"
+        value={typed}
+        onChange={handleInputChange}
+        className="absolute opacity-0 w-px h-px overflow-hidden outline-none pointer-events-auto z-0"
+        style={{ caretColor: "transparent", fontSize: "16px" }}
+        autoCapitalize="off"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck="false"
+      />
       {/* Absolute positioned particles container */}
       {activeTier > 0 && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-0">
@@ -267,7 +289,7 @@ export default function TypingSandbox({
           )}
         </motion.div>
       </div>
-    </div>
+    </label>
   );
 }
 

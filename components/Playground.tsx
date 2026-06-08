@@ -55,6 +55,8 @@ function Playground() {
     setSettingsOpen,
     glowPreference,
     setGlowPreference,
+    inputRef,
+    handleInputChange,
   } = useTypingTest();
 
   return (
@@ -169,6 +171,8 @@ function Playground() {
               isStarted={isStarted}
               isFinished={isFinished}
               glowPreference={glowPreference}
+              inputRef={inputRef}
+              handleInputChange={handleInputChange}
             />
 
             {/* Refresh Restart Button below the text */}
@@ -209,7 +213,6 @@ function Playground() {
           </div>
         )}
       </div>
-      {/* </div> */}
 
       {/* Settings Sidebar Slider Overlay */}
       <AnimatePresence>

@@ -74,7 +74,6 @@ export function useTypingTest() {
   const [soundPack, setSoundPack] = useState("off");
   const [clickSound, setClickSound] = useState("on");
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [glowPreference, setGlowPreference] = useState("on");
 
   // States for smooth absolute caret cursor and scrolling viewport
   const [cursorStyle, setCursorStyle] = useState({
@@ -585,12 +584,6 @@ export function useTypingTest() {
     } else {
       setClickSound("on");
     }
-    const savedGlow = localStorage.getItem("minttyping_glow");
-    if (savedGlow) {
-      setGlowPreference(savedGlow);
-    } else {
-      setGlowPreference("on");
-    }
 
     // Load timer, punctuation, numbers, and difficulty configurations
     const savedTimer = localStorage.getItem("minttyping_timer");
@@ -622,11 +615,6 @@ export function useTypingTest() {
   useEffect(() => {
     localStorage.setItem("minttyping_click_sound", clickSound);
   }, [clickSound]);
-
-  // Save glow preference to localStorage
-  useEffect(() => {
-    localStorage.setItem("minttyping_glow", glowPreference);
-  }, [glowPreference]);
 
   // Save timer configuration to localStorage
   useEffect(() => {
@@ -800,8 +788,6 @@ export function useTypingTest() {
     setClickSound,
     isSettingsOpen,
     setSettingsOpen,
-    glowPreference,
-    setGlowPreference,
     inputRef,
     handleInputChange,
   };

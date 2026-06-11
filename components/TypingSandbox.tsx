@@ -26,39 +26,9 @@ interface TypingSandboxProps {
   wpm: number;
   isStarted: boolean;
   isFinished: boolean;
-  glowPreference: string;
   inputRef: React.RefObject<HTMLInputElement | null>;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
-
-// Speed thresholds (low values for easy manual testing)
-const TIER1_WPM = 20;
-const TIER2_WPM = 40;
-const TIER3_WPM = 60;
-
-// Pre-seeded static particle positions to ensure hydration safety
-const STATIC_PARTICLES = [
-  { left: "8%", size: "w-1 h-1", delay: "0.1s", duration: "1.4s" },
-  { left: "15%", size: "w-1.5 h-1.5", delay: "0.4s", duration: "1.8s" },
-  { left: "22%", size: "w-1 h-1", delay: "0.8s", duration: "1.2s" },
-  { left: "30%", size: "w-2 h-2", delay: "0.2s", duration: "1.6s" },
-  { left: "38%", size: "w-1 h-1", delay: "0.6s", duration: "1.3s" },
-  { left: "45%", size: "w-1.5 h-1.5", delay: "0.9s", duration: "1.9s" },
-  { left: "52%", size: "w-1 h-1", delay: "0.3s", duration: "1.5s" },
-  { left: "60%", size: "w-2 h-2", delay: "0.7s", duration: "1.1s" },
-  { left: "68%", size: "w-1 h-1", delay: "0.5s", duration: "1.7s" },
-  { left: "75%", size: "w-1.5 h-1.5", delay: "1.1s", duration: "1.4s" },
-  { left: "82%", size: "w-1 h-1", delay: "0.1s", duration: "1.6s" },
-  { left: "90%", size: "w-2 h-2", delay: "0.6s", duration: "1.3s" },
-  { left: "94%", size: "w-1 h-1", delay: "0.3s", duration: "1.5s" },
-  { left: "12%", size: "w-1 h-1", delay: "0.7s", duration: "1.2s" },
-  { left: "27%", size: "w-1.5 h-1.5", delay: "1.3s", duration: "1.5s" },
-  { left: "41%", size: "w-1 h-1", delay: "0.5s", duration: "1.6s" },
-  { left: "58%", size: "w-2 h-2", delay: "1.0s", duration: "1.4s" },
-  { left: "70%", size: "w-1 h-1", delay: "0.2s", duration: "1.7s" },
-  { left: "85%", size: "w-1.5 h-1.5", delay: "0.8s", duration: "1.3s" },
-  { left: "97%", size: "w-1 h-1", delay: "0.4s", duration: "1.5s" },
-];
 
 export default function TypingSandbox({
   text,
@@ -73,7 +43,6 @@ export default function TypingSandbox({
   wpm,
   isStarted,
   isFinished,
-  glowPreference,
   inputRef,
   handleInputChange,
 }: TypingSandboxProps) {
@@ -105,46 +74,15 @@ export default function TypingSandbox({
     });
   }, [text]);
 
-  const activeTier = useMemo(() => {
-    if (glowPreference === "off" || !isStarted || isFinished || !wpm) return 0;
-    if (wpm >= TIER3_WPM) return 3;
-    if (wpm >= TIER2_WPM) return 2;
-    if (wpm >= TIER1_WPM) return 1;
-    return 0;
-  }, [wpm, isStarted, isFinished, glowPreference]);
-
-  const cardBorderGlowClass = useMemo(() => {
-    if (activeTier === 1) {
-      return "border-[#e2b714]/70 shadow-[0_0_25px_rgba(226,183,20,0.35),_0_0_50px_rgba(226,183,20,0.15)]";
-    }
-    if (activeTier === 2) {
-      return "animate-flame-flicker";
-    }
-    if (activeTier === 3) {
-      return "animate-superhuman-burn";
-    }
-    return "border-[#1e1e1f] shadow-none";
-  }, [activeTier]);
-
   const caretClass = useMemo(() => {
-    let base = "absolute left-0 top-0 transition-[background-color,width,box-shadow] duration-200 pointer-events-none z-10";
-    if (activeTier === 1) {
-      base += " w-[2.5px] bg-[#e2b714] shadow-[0_0_15px_#e2b714]";
-    } else if (activeTier === 2) {
-      base += " w-[2.75px] bg-[#f59e0b] shadow-[0_0_20px_#f59e0b]";
-    } else if (activeTier === 3) {
-      base += " w-[3px] bg-[#ef4444] shadow-[0_0_25px_#ef4444]";
-    } else {
-      base += " w-[2px] bg-[#e2b714]";
-    }
-    return `${base} ${isTyping ? "" : "animate-cursor-blink"}`;
-  }, [activeTier, isTyping]);
+    return `absolute left-0 top-0 pointer-events-none z-10 w-[2px] bg-[#e2b714] ${isTyping ? "" : "animate-cursor-blink"}`;
+  }, [isTyping]);
 
   return (
     <label
       htmlFor="typing-input"
       onClick={() => inputRef.current?.focus()}
-      className={`relative block w-full rounded-2xl border bg-[#090909]/60 backdrop-blur-sm pt-12 pb-6 px-8 transition-all duration-300 ${cardBorderGlowClass} cursor-text`}
+      className="relative block w-full rounded-2xl bg-[#090909]/60 backdrop-blur-sm pt-12 pb-6 px-8 cursor-text"
     >
       {/* Hidden input to catch mobile keyboard keypresses */}
       <input
@@ -160,55 +98,6 @@ export default function TypingSandbox({
         autoCorrect="off"
         spellCheck="false"
       />
-      {/* Absolute positioned particles container */}
-      {activeTier > 0 && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-0">
-          {STATIC_PARTICLES.slice(0, activeTier === 1 ? 6 : activeTier === 2 ? 12 : 20).map((p, idx) => {
-            let colorClass = "bg-[#e2b714]";
-            if (activeTier === 2) {
-              colorClass = idx % 2 === 0 ? "bg-[#e2b714]" : "bg-[#f59e0b]";
-            } else if (activeTier === 3) {
-              colorClass = idx % 3 === 0 ? "bg-[#e2b714]" : idx % 3 === 1 ? "bg-[#f59e0b]" : "bg-[#ef4444]";
-            }
-            
-            return (
-              <div
-                key={idx}
-                style={{
-                  left: p.left,
-                  animationDelay: p.delay,
-                  animationDuration: p.duration,
-                }}
-                className={`absolute bottom-0 rounded-full ${p.size} ${colorClass} opacity-0 animate-spark`}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* Absolute positioned streak indicator badge */}
-      {activeTier > 0 && (
-        <div className="absolute top-3 right-6 z-20 flex items-center select-none animate-streak-pulse">
-          {activeTier === 1 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#e2b714]/10 border border-[#e2b714]/30 text-[#e2b714]">
-              <span>🍌</span>
-              <span>FAST {wpm} WPM</span>
-            </div>
-          )}
-          {activeTier === 2 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#f59e0b]/10 border border-[#f59e0b]/30 text-[#f59e0b] shadow-[0_0_10px_rgba(245,158,11,0.15)]">
-              <span>⚡</span>
-              <span>SPEED DEMON {wpm} WPM</span>
-            </div>
-          )}
-          {activeTier === 3 && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#ef4444]/15 border border-[#ef4444]/40 text-[#ef4444] shadow-[0_0_15px_rgba(239,68,68,0.25)]">
-              <span>🔥</span>
-              <span>SUPERHUMAN {wpm} WPM</span>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Viewport container */}
       <div

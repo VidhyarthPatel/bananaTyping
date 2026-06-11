@@ -53,8 +53,6 @@ function Playground() {
     setClickSound,
     isSettingsOpen,
     setSettingsOpen,
-    glowPreference,
-    setGlowPreference,
     inputRef,
     handleInputChange,
   } = useTypingTest();
@@ -170,7 +168,6 @@ function Playground() {
               wpm={wpm}
               isStarted={isStarted}
               isFinished={isFinished}
-              glowPreference={glowPreference}
               inputRef={inputRef}
               handleInputChange={handleInputChange}
             />
@@ -363,37 +360,7 @@ function Playground() {
                   </div>
                 </div>
 
-                {/* Section 2: Visual Preference */}
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                    Visual Preference
-                  </h3>
 
-                  {/* Speed Glow Setting */}
-                  <div className="flex flex-col gap-2 bg-[#121212] border border-[#222222]/60 p-4 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[13px] font-semibold">
-                        WPM Speed Glow
-                      </span>
-                      <button
-                        onClick={() =>
-                          setGlowPreference(
-                            glowPreference === "on" ? "off" : "on",
-                          )
-                        }
-                        className={`cursor-pointer w-10 h-5 rounded-full transition-colors relative ${glowPreference === "on" ? "bg-[#e2b714]" : "bg-[#222222]"}`}
-                      >
-                        <div
-                          className={`w-3.5 h-3.5 bg-black rounded-full absolute top-[3px] transition-transform duration-200 ${glowPreference === "on" ? "left-[22px]" : "left-[4px]"}`}
-                        />
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-[#555555] leading-relaxed mt-1">
-                      Enables speed streak alerts, active caret shadow glows,
-                      and floating sparks as your WPM speed increases.
-                    </p>
-                  </div>
-                </div>
               </div>
             </motion.div>
           </>

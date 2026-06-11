@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "BananaTyping | Fast & Fun WPM Speed Typing Test",
-  description: "Test your live typing speed, WPM, and accuracy with realistic mechanical keyboard sounds, live speed streak glows, and detailed interactive metrics dashboards on BananaTyping.",
+  description: "Test your live typing speed, WPM, and accuracy with realistic mechanical keyboard sounds and detailed interactive metrics dashboards on BananaTyping.",
 };
 
 export default function RootLayout({
